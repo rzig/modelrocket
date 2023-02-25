@@ -36,5 +36,11 @@ def handle_update_model():
         requests.get(f'http://{hostname}/evict?model={model}')
     return "updated"
 
+@app.get("/register_hash_to_model")
+def handle_hash_register():
+    model = request.args.get("model")
+    hval = request.args.get("hash")
+    r.set(f'token:{hval}', model)
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=PORT)
