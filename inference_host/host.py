@@ -37,7 +37,8 @@ app = Flask(__name__)
     
 @app.get("/evict")
 def handle_evict():
-    evict_model(request.get("model"))
+    evict_model(request.args.get("model"))
+    return "evicted"
 
 @app.post("/inference")
 def handle_inference():
