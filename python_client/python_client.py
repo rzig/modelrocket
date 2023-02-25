@@ -1,4 +1,4 @@
-
+import numpy as np
 import torch.onnx
 import torch
 from io import BytesIO
@@ -27,17 +27,9 @@ def upload(model, input_type, input_shape):
     print('Model has been converted to ONNX') 
 
 if __name__ == "__main__":
-    model = test.Net()
-    path = "mnist_cnn.pt" 
-    model.load_state_dict(torch.load(path))
-    dataset1 = datasets.MNIST('data', train=True)
-    dataset2 = datasets.MNIST('data', train=False)
-    train_loader = torch.utils.data.DataLoader(dataset1)
-    test_loader = torch.utils.data.DataLoader(dataset2)
-    input, label = dataset1[0]
-    print(input)
-    print(label)
-    input_shape = (64, 1, input.size[0], input.size[1])
-    input_type = type(input)
-    upload(model, input_type, input_shape)
+    model = test.Network() 
+    model.load_state_dict(torch.load("./mymodel.pth"))
+    input_shape = (1, 4) # input for single input
+    input_type = np.float64
 
+    upload(model, input_type, input_shape)
