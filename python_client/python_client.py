@@ -42,7 +42,7 @@ def upload(model, model_name, input_type, input_shape):
         print("Empty response")
         return
     key = response_json['key']
-    response2 = requests.post(f"http://127.0.0.1:3000/upload_model_file/{key}", files={ "model": bytes_io_model })
+    response2 = requests.post(f"http://127.0.0.1:3000/upload_model_file/{key}", files={ "model": bytes_io_model.getvalue() })
     try:
         rj = response2.json()
     except Exception:
