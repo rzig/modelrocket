@@ -9,6 +9,7 @@ onnxruntime = "*"
 lru-dict = "*"
 numpy = "*"
 requests = "*"
+boto3 = "*"
 
 [dev-packages]
 

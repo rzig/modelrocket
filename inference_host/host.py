@@ -5,6 +5,9 @@ import os
 from lru import LRU
 from typing import Any, Dict
 import numpy as np
+import boto3
+import os
+import time
 
 def cleanup_session(model, session):
     del session
@@ -14,14 +17,38 @@ PORT = os.environ.get("PORT", 5001)
 
 model_sessions = LRU(MAX_SESSIONS, callback=cleanup_session)
 
+s3_session = boto3.session.Session()
+s3 = s3_session.client(
+    service_name="s3",
+    aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+    aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    endpoint_url=os.environ["S3_ENDPOINT"]
+)
+
 def evict_model(uuid: str):
     if uuid and uuid in model_sessions:
         del model_sessions[uuid]
+    os.remove(uuid)
+    
 
-def load_model(uuid: str):
+def load_model(uuid: str, callback=None):
     if not uuid in model_sessions:
+        meta = s3.head_object(Bucket="models", Key=uuid)
+        total_length = int(meta.get('ContentLength', 0))
+        downloaded = 0
+        percent = 0
+        def cb(chunk):
+            nonlocal downloaded
+            nonlocal percent
+            downloaded += chunk
+            percent = int(chunk / total_length)
+        s3.download_file("models", uuid, uuid, Callback=cb)
+        while percent < 1:
+            time.sleep(0.01)
+            pass
         session = onnx.InferenceSession(uuid)
         model_sessions[uuid] = session
+        return
 
 def generate_model_inputs(inputs: Dict[str, Any]) -> Dict[str, Any]:
     new_dict = {}
