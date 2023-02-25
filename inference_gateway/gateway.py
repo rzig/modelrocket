@@ -5,6 +5,7 @@ import random
 from flask import Flask, request
 import functools
 import hashlib
+import requests
 
 REDIS_HOST = os.environ["REDIS_HOST"]
 REDIS_PORT = os.environ["REDIS_PORT"]
@@ -27,11 +28,16 @@ def get_inference_server(model_uuid: str) -> str:
 def sha256(s: str) -> str:
     return hashlib.sha256(bytes(s, "UTF-8")).hexdigest()
 
-@app.route("/inference")
+@app.post("/inference")
 def process_inference():
-    model = request.args.get("model", "")
-    token = sha256(request.args.get("token", ""))
+    data = request.json
+    if not data:
+        return "bad request"
+    model = data.get("model", "")
+    token = sha256(data.get("token", ""))
     if not validate_token_access(token, model):
         return "Permission denied"
+    del data["token"]
     upstream = get_inference_server(model)
-    return upstream
+    res = requests.post(f'http://{upstream}/inference', json=data)
+    return res.json()
