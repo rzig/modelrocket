@@ -39,5 +39,6 @@ def process_inference():
         return "Permission denied"
     del data["token"]
     upstream = get_inference_server(model)
+    r.publish('inference', model)
     res = requests.post(f'http://{upstream}/inference', json=data)
     return res.json()
