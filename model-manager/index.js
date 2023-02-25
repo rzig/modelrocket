@@ -3,13 +3,17 @@ const mongodb = require('mongodb');
 const uuid = require('uuid');
 const dotenv = require("dotenv");
 const bodyParser = require('body-parser');
+const os = require('os');
 const s3 = require('s3-client');
-const server = express();
+const multer  = require('multer');
 
+dotenv.config();
+const upload = multer({ dest: os.tmpdir() });
+
+const server = express();
 server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({ extended: true })); 
 
-dotenv.config();
 let client = null;
 let db = null;
 
@@ -23,10 +27,10 @@ const generateRecord = async (n, i) => {
         uuid:uuid.v4(),
         name:n,
         input: {
-            input_type: i.input_type,
-            size: i.size
+            type: i.type,
+            shape: i.shape
         },
-        key: uuid.v1(),
+        key: uuid.v4(),
         shard: {
             ids: ['0']
         }
@@ -35,11 +39,11 @@ const generateRecord = async (n, i) => {
 };
 
 const s3Client = s3.createClient({
-    maxAsyncS3: 20,     // this is the default
-    s3RetryCount: 3,    // this is the default
-    s3RetryDelay: 1000, // this is the default
-    multipartUploadThreshold: 20971520, // this is the default (20 MB)
-    multipartUploadSize: 15728640, // this is the default (15 MB)
+    maxAsyncS3: 20,
+    s3RetryCount: 3,
+    s3RetryDelay: 1000,
+    multipartUploadThreshold: 20971520, // 20 MB
+    multipartUploadSize: 15728640,      // 15 MB
     s3Options: {
       accessKeyId: process.env.ACCESS_KEY_ID,
       secretAccessKey: process.env.SECRET_ACCESS_ID,
@@ -58,22 +62,23 @@ setup().then(() => {
     });
 })
 server.get('/', async (req, res) => {
-    const whatever = await db.collection('models').findOne({name:"test"})
+    const whatever = await db.collection('models').findOne({ name: "test" })
     res.send(whatever);
 });
-server.post('/load_model', async function (req, res) {
+server.post('/load_model', upload.single('model'), async function (req, res) {
     const collection = await db.collection('models')
-    const request = req.body;
-    //console.log(req.body);
+    const request = await req.body;
+    const file = req.file;
+    console.log(file);
     console.log(req.body);
-    if (req.body.name == null || req.body.input == null || req.body.input.input_type == null || req.body.input.size == null) {
-        console.log("req contains NULL values");
+    if (req.body == null || req.body.name == null || req.body.input == null || req.body.input.type == null || req.body.input.shape == null) {
+        console.log("req contains NULL values, rejecting query");
+        return res.status(500);
     }
     const new_record = await generateRecord(request.name, request.input);
-    key = new_record.key;
     //console.log(new_record);
     //collection.insertOne(new_record);
-    return res.json({"key": key});
+    return res.json({ key: new_record.key });
 });
 
 
