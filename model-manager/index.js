@@ -7,6 +7,7 @@ const server = express();
 dotenv.config();
 let client = null;
 let db = null;
+
 const setup = async () => {
     client = await mongodb.MongoClient.connect(process.env.MONGODB_URL);
     db = client.db('Models');
@@ -31,10 +32,6 @@ const template = {
         type: "int",
         size: 3
     },
-    output: {
-        type: "bool",
-        size: 1
-    },
     key: 4372,
     shard: {
         id: 0
@@ -43,8 +40,7 @@ const template = {
 
 const post = async () => {
     const collection = await db.collection('models')
-    collection.insertOne(template, function(err, res) {
-        if (err) throw err;
-        console.log("1 document inserted");
-    });
+    const new_record = template;
+    new_record.uuid = uuid.v4();
+    collection.insertOne(template);
 };
