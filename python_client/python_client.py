@@ -5,6 +5,7 @@ from io import BytesIO
 import requests
 from torchvision import datasets, transforms
 import test
+import json as JSON
 def upload(model, input_type, input_shape):
 
     # set the model to inference mode 
@@ -16,7 +17,7 @@ def upload(model, input_type, input_shape):
     # Export the model   
     torch.onnx.export(model,         # model being run 
          dummy_input,       # model input (or a tuple for multiple inputs) 
-         "test.onnx",       # where to save the model  
+         bytes_io_model,       # where to save the model  
          export_params=True,  # store the trained parameter weights inside the model file 
          opset_version=10,    # the ONNX version to export the model to 
          do_constant_folding=True,  # whether to execute constant folding for optimization 
@@ -24,8 +25,14 @@ def upload(model, input_type, input_shape):
          output_names = ['modelOutput'], # the model's output names 
          dynamic_axes={'modelInput' : {0 : 'batch_size'},    # variable length axes 
                                 'modelOutput' : {0 : 'batch_size'}}) 
+    print(bytes_io_model.getvalue())
     print('Model has been converted to ONNX') 
-
+    requests_url = 'http://127.0.0.1:3000/load_model'
+    myobj =  {'name': 'test', 'input': {'input_type': str(input_type), 'size': str(input_shape)}, 'model':str(bytes_io_model.getvalue())}
+    response = requests.post(requests_url, json = myobj)
+    response_json = response.json()
+    key = response_json['key']
+    print(key)
 if __name__ == "__main__":
     model = test.Network() 
     model.load_state_dict(torch.load("./mymodel.pth"))
