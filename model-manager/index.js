@@ -7,9 +7,15 @@ const mongodb = require('mongodb');
 const uuid = require('uuid');
 const dotenv = require("dotenv");
 const bodyParser = require('body-parser');
-const multer  = require('multer');
+// const multer  = require('multer');
 
 dotenv.config();
+
+
+const checkJwt = auth({
+    audience: '{yourApiIdentifier}',
+    issuerBaseURL: `https://{yourDomain}/`,
+});
 
 const initObjectStoreClient = require("@relaycorp/object-storage").initObjectStoreClient;
 console.log(process.env)
