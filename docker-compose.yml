@@ -1,0 +1,21 @@
+version: "2"
+
+services:
+  mongo:
+    image: "bitnami/mongodb:latest"
+    ports:
+      - 27018:27017
+    volumes:
+      - ./mongo_data:/bitnami/mongodb
+    environment:
+      - MONGODB_USERNAME=root
+      - MONGODB_PASSWORD=illinois
+      - MONGODB_DATABASE=db
+      - MONGODB_ROOT_PASSWORD=illinois
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+  redis:
+    image: "bitnami/redis:latest"
+    ports:
+      - 6379:6379
+    environment:
+      - REDIS_PASSWORD=hack
