@@ -35,14 +35,22 @@ def upload(model, model_name, input_type, input_shape):
     print('Model has been converted to ONNX') 
     requests_url = 'http://127.0.0.1:3000/load_model'
     myobj =  {'name': model_name, 'input': {'type': str(input_type), 'shape': str(input_shape)}}
-    response = requests.post(requests_url, json=myobj, files={ "model": bytes_io_model })
+    response = requests.post(requests_url, json=myobj) #,files={ 'model':bytes_io_model })
     try:
         response_json = response.json()
     except Exception:
         print("Empty response")
         return
     key = response_json['key']
+    response2 = requests.post(f"http://127.0.0.1:3000/upload_model_file/{key}", files={ "model": bytes_io_model })
+    try:
+        rj = response2.json()
+    except Exception:
+        print("Bad reponse")
+        return
     print(key)
+    print(rj)
+
 if __name__ == "__main__":
     model = test.Network() 
     model.load_state_dict(torch.load("./mymodel.pth"))

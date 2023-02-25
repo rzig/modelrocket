@@ -3,9 +3,10 @@ const mongodb = require('mongodb');
 const uuid = require('uuid');
 const dotenv = require("dotenv");
 const bodyParser = require('body-parser');
-const os = require('os');
 const s3 = require('s3-client');
+const os = require('os');
 const multer  = require('multer');
+// const fileUpload = require('express-fileupload');
 
 dotenv.config();
 const upload = multer({ dest: os.tmpdir() });
@@ -13,6 +14,7 @@ const upload = multer({ dest: os.tmpdir() });
 const server = express();
 server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({ extended: true })); 
+// server.use(fileUpload());
 
 let client = null;
 let db = null;
@@ -67,10 +69,9 @@ server.get('/', async (req, res) => {
 });
 server.post('/load_model', upload.single('model'), async function (req, res) {
     const collection = await db.collection('models')
-    const request = await req.body;
-    const file = req.file;
-    console.log(file);
+    const request = req.body;
     console.log(req.body);
+
     if (req.body == null || req.body.name == null || req.body.input == null || req.body.input.type == null || req.body.input.shape == null) {
         console.log("req contains NULL values, rejecting query");
         return res.status(500);
@@ -81,6 +82,12 @@ server.post('/load_model', upload.single('model'), async function (req, res) {
     return res.json({ key: new_record.key });
 });
 
+server.post('/upload_model_file/:model_uuid', upload.single('model'), (req, res) => {
+    const file = req.file;
+    console.log(req.params.model_uuid);
+    console.log(file);
+    return res.json({"a": file})
+});
 
 
 
