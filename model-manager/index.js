@@ -15,7 +15,7 @@ const initObjectStoreClient =
 console.log(process.env);
 const s3client = initObjectStoreClient(
   "minio",
-  "http://localhost:9000",
+  "http://127.0.0.1:9000",
   process.env.ACCESS_KEY_ID,
   process.env.SECRET_ACCESS_ID,
   false
@@ -80,9 +80,11 @@ server.post("/load_model", upload.single("model"), async function (req, res) {
   new_record.key = crypto.createHash("sha256").update(key).digest("base64");
   collection.insertOne(new_record);
   await fetch(
-    `http://localhost:5005/register_hash_to_model?model=${new_record.uuid}&hash=${new_record.key}`
+    `http://127.0.0.1:5005/register_hash_to_model?model=${encodeURIComponent(
+      new_record.uuid
+    )}&hash=${encodeURIComponent(new_record.key)}`
   );
-  return res.json({ key });
+  return res.json({ token: key, key: new_record.uuid });
 });
 
 server.post(
@@ -95,7 +97,11 @@ server.post(
     const model_uuid = req.params.model_uuid;
     const entry = await db.collection("models").findOne({ uuid: model_uuid });
     await uploadToS3(file.path, entry.uuid);
-    await fetch(`http://localhost:5005/generate_shard?model=${uuid}`);
+    await fetch(
+      `http://127.0.0.1:5005/generate_shard?model=${encodeURIComponent(
+        model_uuid
+      )}`
+    );
     return res.json({ a: "b" });
   }
 );

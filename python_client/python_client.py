@@ -3,7 +3,7 @@ import torch.onnx
 import torch
 from io import BytesIO
 import requests
-from torchvision import datasets, transforms
+# from torchvision import datasets, transforms
 import test
 import json as JSON
 def upload(model, model_name, input_type, input_shape):
@@ -48,7 +48,8 @@ def upload(model, model_name, input_type, input_shape):
     except Exception:
         print("Bad reponse")
         return
-    print(key)
+    print("key:",key)
+    print("token:",response_json["token"])
     print(rj)
 
 if __name__ == "__main__":
