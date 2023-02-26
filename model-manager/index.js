@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 var crypto = require("crypto");
 const fetch = require("node-fetch");
+const cors = require("cors");
 dotenv.config();
 
 const initObjectStoreClient =
@@ -23,6 +24,7 @@ const s3client = initObjectStoreClient(
 const upload = multer({ dest: os.tmpdir() });
 
 const server = express();
+server.use(cors());
 server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({ extended: true }));
 
@@ -57,7 +59,7 @@ const uploadToS3 = (path, uuid) => {
 
 server.get("/get_models/", async (req, res) => {
   try {
-    const allRecords = await db.collection("models").find({});
+    const allRecords = await db.collection("models").find({}).toArray();
     res.send(allRecords);
   } catch (e) {
     res.status(500);
@@ -69,21 +71,25 @@ server.get("/get_model/:token", async (req, res) => {
     const token = req.params.token;
     const record = await db.collection("models").findOne({ key: token });
     res.send(record);
-  }
-  catch (e) {
+  } catch (e) {
     res.status(500);
     return;
   }
 });
 
 server.get("/get_new_token/:uuid", async (req, res) => {
-  const new_token = crypto.createHash("sha256").update(key).digest("base64");
+  const new_uuid = uuid.v4();
+  const new_token = crypto
+    .createHash("sha256")
+    .update(new_uuid)
+    .digest("base64");
   try {
     const provided_key = req.params.uuid;
-    const record = await db.collection("models").updateOne({ uuid: provided_key },{$set:{ key: new_token }});
-    res.send({ token: new_token });
-  }
-  catch (e) {
+    const record = await db
+      .collection("models")
+      .updateOne({ uuid: provided_key }, { $set: { key: new_token } });
+    res.send({ token: new_uuid });
+  } catch (e) {
     res.status(500);
     return;
   }
@@ -107,7 +113,14 @@ server.post("/load_model", upload.single("model"), async function (req, res) {
   const exists = collection.find({ name: req.body.name }).count() > 0;
   if (exists) {
     const record = collection.findOne({ name: req.body.key });
-    collection.updateOne({ name: req.body.name },{ $set:{ input:{ type: req.body.input.type, shape: req.body.input.shape } } });
+    collection.updateOne(
+      { name: req.body.name },
+      {
+        $set: {
+          input: { type: req.body.input.type, shape: req.body.input.shape },
+        },
+      }
+    );
     return res.json({ token: record.key, key: record.uuid });
   }
   const new_record = await generateRecord(request.name, request.input);

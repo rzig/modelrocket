@@ -11,6 +11,7 @@ import {
   ListItem,
   UnorderedList,
 } from "@chakra-ui/react";
+import { useState } from "react";
 
 import SyntaxHighlighter from "react-syntax-highlighter";
 import {
@@ -47,6 +48,7 @@ import {
 } from "@chakra-ui/react";
 
 import { ArrowRightIcon } from "@chakra-ui/icons";
+import { useEffect } from "react";
 
 const theme = extendTheme({
   fonts: {
@@ -215,6 +217,18 @@ function ModelComponent({ model }) {
   console.log(json.result); // Your model's output is here!
 }`;
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [tokenGenerated, setTokenGenerated] = useState(false);
+  const [token, setToken] = useState("");
+
+  const getToken = () => {
+    fetch(`http://localhost:3000/get_new_token/${model.uuid}`)
+      .then((r) => r.json())
+      .then((t) => {
+        setToken(t.token);
+        setTokenGenerated(true);
+      });
+  };
+
   return (
     <>
       <Box
@@ -258,6 +272,24 @@ function ModelComponent({ model }) {
             <Heading fontSize={{ base: "lg" }} marginTop={4}>
               Need a new key?
             </Heading>
+            {!tokenGenerated && (
+              <Button
+                as={"a"}
+                display={{ base: "none", md: "inline-flex" }}
+                fontSize={"sm"}
+                fontWeight={600}
+                color={"white"}
+                bg={"green.400"}
+                href={"#"}
+                _hover={{
+                  bg: "green.500",
+                }}
+                onClick={getToken}
+              >
+                Regenerate Token
+              </Button>
+            )}
+            {tokenGenerated && <tt style={{ fontSize: 15 }}>{token}</tt>}
           </ModalBody>
           <ModalFooter></ModalFooter>
         </ModalContent>
@@ -267,14 +299,26 @@ function ModelComponent({ model }) {
 }
 
 function Admin() {
+  const [loading, setLoading] = useState(true);
+  const [models, setModels] = useState([]);
+  useEffect(() => {
+    fetch("http://localhost:3000/get_models/")
+      .then((res) => res.json())
+      .then((j) => {
+        setModels(j);
+        setLoading(false);
+      });
+  }, []);
   return (
     <Container maxW={"3xl"}>
       <Heading as="h1" marginTop={4} marginBottom={3}>
         My Models
       </Heading>
-      {MODELS.map((model) => {
-        return <ModelComponent model={model} />;
-      })}
+      {!loading &&
+        models.map((model) => {
+          return <ModelComponent model={model} />;
+        })}
+      {loading && <Text textAlign="center">Loading...</Text>}
     </Container>
   );
 }
