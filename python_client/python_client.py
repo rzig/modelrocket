@@ -16,7 +16,9 @@ def upload(model, model_name, input_type, input_shape):
     bytes_io_model = BytesIO()
     # Let's create a dummy input tensor  
     dummy_input = torch.randn(input_shape, requires_grad=True)  
-
+    #file_name = str(model_name) + '.onnx'
+    #print(file_name)
+    
     # Export the model   
     torch.onnx.export(
         model,                                                  # model being run 
