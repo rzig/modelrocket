@@ -7,12 +7,11 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 var crypto = require("crypto");
-
+const fetch = require("node-fetch");
 dotenv.config();
 
 const initObjectStoreClient =
   require("@relaycorp/object-storage").initObjectStoreClient;
-console.log(process.env);
 const s3client = initObjectStoreClient(
   "minio",
   "http://127.0.0.1:9000",
@@ -56,14 +55,44 @@ const uploadToS3 = (path, uuid) => {
   return s3client.putObject({ body: f }, uuid, "models");
 };
 
-server.get("/", async (req, res) => {
-  const whatever = await db.collection("models").findOne({ name: "test" });
-  res.send(whatever);
+server.get("/get_models/", async (req, res) => {
+  try {
+    const allRecords = await db.collection("models").find({});
+    res.send(allRecords);
+  } catch (e) {
+    res.status(500);
+    return;
+  }
 });
+server.get("/get_model/:token", async (req, res) => {
+  try {
+    const token = req.params.token;
+    const record = await db.collection("models").findOne({ key: token });
+    res.send(record);
+  }
+  catch (e) {
+    res.status(500);
+    return;
+  }
+});
+
+server.get("/get_new_token/:uuid", async (req, res) => {
+  const new_token = crypto.createHash("sha256").update(key).digest("base64");
+  try {
+    const provided_key = req.params.uuid;
+    const record = await db.collection("models").updateOne({ uuid: provided_key },{$set:{ key: new_token }});
+    res.send({ token: new_token });
+  }
+  catch (e) {
+    res.status(500);
+    return;
+  }
+});
+
 server.post("/load_model", upload.single("model"), async function (req, res) {
   const collection = await db.collection("models");
   const request = req.body;
-  console.log(req.body);
+  // console.log(req.body);
 
   if (
     req.body == null ||
@@ -92,8 +121,8 @@ server.post(
   upload.single("model"),
   async (req, res) => {
     const file = req.file;
-    console.log(file);
-    console.log(typeof file.path);
+    // console.log(file);
+    // console.log(typeof file.path);
     const model_uuid = req.params.model_uuid;
     const entry = await db.collection("models").findOne({ uuid: model_uuid });
     await uploadToS3(file.path, entry.uuid);
