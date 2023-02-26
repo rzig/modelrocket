@@ -24,6 +24,10 @@ app = Flask(__name__)
 def handle_generate_shard():
     model = request.args.get("model")
     shard = generate_shard()
+    print("===============")
+    print(shard)
+    print(model)
+    print("===============")
     r.sadd(f'model:{model}:shard', shard)
     return {"shard": shard.decode("UTF-8")}
 
@@ -41,6 +45,7 @@ def handle_hash_register():
     model = request.args.get("model")
     hval = request.args.get("hash")
     r.set(f'token:{hval}', model)
+    return "set"
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=PORT)
