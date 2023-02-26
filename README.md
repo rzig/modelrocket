@@ -1,6 +1,4 @@
----
-title: README.md
----
+
 ![modelrocket logo](https://i.imgur.com/GsfsKTU.png)
 Ben Guan, Vijay Shah, Jacob Stolker, Ryan Ziegler
 # Overview
