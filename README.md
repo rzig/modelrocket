@@ -1,5 +1,6 @@
 
 ![modelrocket logo](https://i.imgur.com/GsfsKTU.png)
+
 Ben Guan, Vijay Shah, Jacob Stolker, Ryan Ziegler
 # Overview
 ModelRocket was designed from the ground up to be horizontally scalable, and is divided into n core services:
