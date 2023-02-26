@@ -1,6 +1,6 @@
-from sklearn.datasets import make_classification
+#from sklearn.datasets import make_classification
 import torch.nn as nn
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 
 import numpy as np
 import torch
@@ -11,13 +11,13 @@ input_dim = 4
 hidden_layers = 25
 # number of classes (unique of y)
 output_dim = 3
-X, Y = make_classification(
-  n_samples=100, n_features=4, n_redundant=0,
-  n_informative=3,  n_clusters_per_class=2, n_classes=3
-)
+#X, Y = make_classification(
+#  n_samples=100, n_features=4, n_redundant=0,
+#  n_informative=3,  n_clusters_per_class=2, n_classes=3
+#)
 
-X_train, X_test, Y_train, Y_test = train_test_split(
-  X, Y, test_size=0.33, random_state=42)
+#X_train, X_test, Y_train, Y_test = train_test_split(
+#  X, Y, test_size=0.33, random_state=42)
 
 
 class Data(Dataset):
@@ -37,11 +37,11 @@ class Data(Dataset):
   def __len__(self):
     return self.len
 
-traindata = Data(X_train, Y_train)
+#traindata = Data(X_train, Y_train)
 
-batch_size = 4
-trainloader = DataLoader(traindata, batch_size=batch_size, 
-                         shuffle=True, num_workers=2)
+#batch_size = 4
+#trainloader = DataLoader(traindata, batch_size=batch_size, 
+#                         shuffle=True, num_workers=2)
 
 class Network(nn.Module):
   def __init__(self):
