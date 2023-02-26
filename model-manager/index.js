@@ -104,6 +104,12 @@ server.post("/load_model", upload.single("model"), async function (req, res) {
     console.log("req contains NULL values, rejecting query");
     return res.status(500);
   }
+  const exists = collection.find({ name: req.body.name }).count() > 0;
+  if (exists) {
+    const record = collection.findOne({ name: req.body.key });
+    collection.updateOne({ name: req.body.name },{ $set:{ input:{ type: req.body.input.type, shape: req.body.input.shape } } });
+    return res.json({ token: record.key, key: record.uuid });
+  }
   const new_record = await generateRecord(request.name, request.input);
   const key = new_record.key;
   new_record.key = crypto.createHash("sha256").update(key).digest("base64");
@@ -113,7 +119,7 @@ server.post("/load_model", upload.single("model"), async function (req, res) {
       new_record.uuid
     )}&hash=${encodeURIComponent(new_record.key)}`
   );
-  return res.json({ token: key, key: new_record.uuid });
+  return res.json({ token: new_record.key, key: new_record.uuid });
 });
 
 server.post(
