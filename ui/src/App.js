@@ -35,6 +35,19 @@ import {
 } from "@chakra-ui/react";
 import WithSubnavigation from "./components/Navbar";
 
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
+} from "@chakra-ui/react";
+
+import { ArrowRightIcon } from "@chakra-ui/icons";
+
 const theme = extendTheme({
   fonts: {
     heading: `'Inter'`,
@@ -147,7 +160,7 @@ function Train() {
       </Box>
 
       <Heading as="h3" marginTop={6} textAlign="center" marginBottom={"2.5"}>
-        As easy as command-C
+        As easy as control-C
       </Heading>
       <Text fontSize={{ base: "lg" }} marginBottom={10}>
         Simply make an account, then run <tt> modelrocket.upload</tt> after
@@ -170,8 +183,100 @@ function Home() {
   );
 }
 
+const MODELS = [
+  {
+    uuid: "adsfasdf",
+    name: "Cool Model 1",
+  },
+  {
+    uuid: "adsfasdf",
+    name: "Cool Model 2",
+  },
+  {
+    uuid: "adsfasdf",
+    name: "Cool Model 3",
+  },
+];
+
+function ModelComponent({ model }) {
+  const codeSample = `fetch("http://127.0.0.1:5000/inference", {
+  method: "POST",
+  body: JSON.stringify({
+    "token": "YOUR_TOKEN_HERE", 
+    "model": "${model.uuid}",
+    "inputs": {MODEL_INPUTS_HERE}
+  }),
+  headers: {
+      "Content-type": "application/json; charset=UTF-8"
+  }
+})
+.then((response) => response.json())
+.then((json) => {
+  console.log(json.result); // Your model's output is here!
+}`;
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  return (
+    <>
+      <Box
+        borderWidth={2}
+        borderRadius={7}
+        borderColor="gray.300"
+        px={5}
+        py={5}
+        _hover={{
+          borderColor: "gray.500",
+          cursor: "pointer",
+        }}
+        marginBottom={2}
+        onClick={onOpen}
+      >
+        <Stack
+          direction={"row"}
+          align={"center"}
+          alignSelf={"center"}
+          position={"relative"}
+          justifyContent={"space-between"}
+        >
+          <Text fontSize={{ base: "lg" }}>{model.name}</Text>
+          <ArrowRightIcon color="gray:600" fill="gray:500" opacity={0.85} />
+        </Stack>
+      </Box>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent maxW="750px">
+          <ModalHeader>{model.name}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Heading fontSize={{ base: "lg" }}>Access Your Model</Heading>
+            <SyntaxHighlighter
+              language="javascript"
+              style={{ ...nord, borderRadius: "10px" }}
+            >
+              {codeSample}
+            </SyntaxHighlighter>
+            <Heading fontSize={{ base: "lg" }} marginTop={4}>
+              Need a new key?
+            </Heading>
+          </ModalBody>
+          <ModalFooter></ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
+
 function Admin() {
-  return <Text>Hi</Text>;
+  return (
+    <Container maxW={"3xl"}>
+      <Heading as="h1" marginTop={4} marginBottom={3}>
+        My Models
+      </Heading>
+      {MODELS.map((model) => {
+        return <ModelComponent model={model} />;
+      })}
+    </Container>
+  );
 }
 
 function App() {

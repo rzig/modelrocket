@@ -36,3 +36,21 @@
     transform: rotate(360deg);
   }
 }
+
+.language-python > span:nth-child(91) {
+  font-weight: 600;
+}
+
+.language-python > span:nth-child(92) {
+  font-weight: 600;
+}
+.language-python > span:nth-child(93) {
+  font-weight: 600;
+}
+.language-python > span:nth-child(94) {
+  font-weight: 600;
+}
+
+.language-python > span:nth-child(95) {
+  font-weight: 600;
+}
