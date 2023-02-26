@@ -33,19 +33,18 @@ def evict_model(uuid: str):
 
 def load_model(uuid: str, callback=None):
     if not uuid in model_sessions:
+        print(uuid)
         meta = s3.head_object(Bucket="models", Key=uuid)
         total_length = int(meta.get('ContentLength', 0))
+        print("total length: ", total_length)
         downloaded = 0
         percent = 0
         def cb(chunk):
             nonlocal downloaded
             nonlocal percent
             downloaded += chunk
-            percent = int(chunk / total_length)
-        s3.download_file("models", uuid, uuid, Callback=cb)
-        while percent < 1:
-            time.sleep(0.01)
-            pass
+            percent = chunk / total_length
+        s3.download_file("models", uuid, uuid)
         session = onnx.InferenceSession(uuid)
         model_sessions[uuid] = session
         return
@@ -69,18 +68,23 @@ def handle_evict():
 
 @app.post("/inference")
 def handle_inference():
+    print ("we are in here")
     data = request.json
     if not data:
         return "bad request"
     model = data.get("model")
+    print("got down here")
     load_model(model)
     inputs = data.get("inputs", {})
     if not inputs:
         return "bad request"
+    print ("this is good")
     res = model_sessions[model].run(None, generate_model_inputs(inputs))
     outputs = {}
+    print ("stopping here ")
     for i, output in enumerate(model_sessions[model].get_outputs()):
         outputs[str(output.name)] = res[i].tolist()
+    print("got to here")
     return {"result": outputs}
 
 if __name__ == "__main__":
