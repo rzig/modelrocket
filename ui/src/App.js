@@ -49,6 +49,7 @@ import {
 
 import { ArrowRightIcon } from "@chakra-ui/icons";
 import { useEffect } from "react";
+import SmallWithNavigation from "./components/Footer";
 
 const theme = extendTheme({
   fonts: {
@@ -149,6 +150,22 @@ def train(args, model, device, train_loader, optimizer, epoch):
     # Model URL printed to terminal and returned
 `;
 
+const vj_code_2 = `fetch("http://127.0.0.1:5000/inference", {
+  method: "POST",
+  body: JSON.stringify({
+    "token": "YOUR_TOKEN_HERE", 
+    "model": "YOUR_MODEL_HERE",
+    "inputs": {MODEL_INPUTS_HERE}
+  }),
+  headers: {
+      "Content-type": "application/json; charset=UTF-8"
+  }
+})
+.then((response) => response.json())
+.then((json) => {
+  console.log(json.result); // Your model's output is here!
+}`;
+
 function Train() {
   return (
     <Container maxW={"4xl"}>
@@ -171,6 +188,24 @@ function Train() {
         your model, just call <tt> upload</tt> again: we'll take care of the
         rest.
       </Text>
+
+      <Box backgroundColor={"gray.800"} borderRadius={10} color="white">
+        <SyntaxHighlighter
+          language="javascript"
+          style={{ ...nord, borderRadius: "10px" }}
+        >
+          {vj_code_2}
+        </SyntaxHighlighter>
+      </Box>
+      <Heading as="h3" marginTop={6} textAlign="center" marginBottom={"2.5"}>
+        ...and control-V
+      </Heading>
+      <Text fontSize={{ base: "lg" }} marginBottom={10}>
+        Once a model is deployed, you can access it from your favorite
+        programming language&mdash;just send an HTTP request. As your model
+        receives requests, we'll automatically scale it across our cluster to
+        ensure that your users never have a bad experience.
+      </Text>
     </Container>
   );
 }
@@ -181,6 +216,7 @@ function Home() {
       <WithSubnavigation />
       <CallToActionWithAnnotation />
       <Train />
+      <SmallWithNavigation />
     </>
   );
 }
