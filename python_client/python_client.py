@@ -52,7 +52,7 @@ def upload(model, model_name, input_type, input_shape):
         return
     print("key:",key)
     print("token:",response_json["token"])
-    print(rj)
+    # print(rj)
 
 if __name__ == "__main__":
     model = test.Network() 

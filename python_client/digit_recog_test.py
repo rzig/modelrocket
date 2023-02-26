@@ -134,13 +134,6 @@ def main():
     if args.test_upload:
         model = Net().to(device)
         model.load_state_dict(torch.load('mnist_cnn.pt'))
-        for data, target in test_loader:
-            plt.imshow(data[0][0], cmap=plt.get_cmap('gray'))
-            plt.show()
-            test_out = (data[0][0]).reshape((1, 1, 28, 28))
-            output = model(test_out)
-            print(output)
-            break
         input_shape = (1, 1, 28, 28)
         input_type = np.float64
         python_client.upload(model, "digit_recog", input_type, input_shape)
