@@ -56,7 +56,7 @@ ModelRocket was designed from the ground up to be horizontally scalable, and is 
     * `REDIS_HOST=localhost REDIS_PORT=6379 REDIS_PASSWORD=<your_password> REDIS_DB=0 python assigner.py`
     
 4. S3 setup: 
-    * Go to `localhost:9000`. 
+    * Go to `localhost:9000`
     * Sign in with your access key-id and secret-key. 
     * Create a new bucket called `models`
 
