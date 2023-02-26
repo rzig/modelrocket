@@ -1,4 +1,5 @@
 import "./App.css";
+import { Link, Route } from "wouter";
 
 import {
   Card,
@@ -159,13 +160,30 @@ function Train() {
   );
 }
 
+function Home() {
+  return (
+    <>
+      <WithSubnavigation />
+      <CallToActionWithAnnotation />
+      <Train />
+    </>
+  );
+}
+
+function Admin() {
+  return <Text>Hi</Text>;
+}
+
 function App() {
   // 2. Wrap ChakraProvider at the root of your app
   return (
     <ChakraProvider theme={theme}>
-      <WithSubnavigation />
-      <CallToActionWithAnnotation />
-      <Train />
+      <Route path="/">
+        <Home />
+      </Route>
+      <Route path="/admin">
+        <Admin />
+      </Route>
     </ChakraProvider>
   );
 }
