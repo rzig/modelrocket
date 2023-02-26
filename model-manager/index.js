@@ -45,6 +45,7 @@ const generateRecord = async (n, i) => {
       type: i.type,
       shape: i.shape,
     },
+    new:true
     // shard: {
     //     ids: ['0']
     // }
@@ -130,27 +131,32 @@ server.post("/load_model", upload.single("model"), async function (req, res) {
   await fetch(
     `http://127.0.0.1:5005/register_hash_to_model?model=${encodeURIComponent(
       new_record.uuid
-    )}&hash=${encodeURIComponent(new_record.key)}`
-  );
-  return res.json({ token: new_record.key, key: new_record.uuid });
-});
-
-server.post(
-  "/upload_model_file/:model_uuid",
-  upload.single("model"),
-  async (req, res) => {
-    const file = req.file;
-    // console.log(file);
-    // console.log(typeof file.path);
-    const model_uuid = req.params.model_uuid;
-    const entry = await db.collection("models").findOne({ uuid: model_uuid });
-    await uploadToS3(file.path, entry.uuid);
-    await fetch(
-      `http://127.0.0.1:5005/generate_shard?model=${encodeURIComponent(
-        model_uuid
-      )}`
-    );
-    return res.json({ a: "b" });
+      )}&hash=${encodeURIComponent(new_record.key)}`
+      );
+      return res.json({ token: new_record.key, key: new_record.uuid });
+    });
+    
+    server.post(
+      "/upload_model_file/:model_uuid",
+      upload.single("model"),
+      async (req, res) => {
+        const file = req.file;
+        // console.log(file);
+        // console.log(typeof file.path);
+        const model_uuid = req.params.model_uuid;
+        const collection = await db.collection("models");
+        const entry = collection.findOne({ uuid: model_uuid });
+        await uploadToS3(file.path, entry.uuid);
+        await fetch(
+          `http://127.0.0.1:5005/update_model?model=${encodeURIComponent(model_uuid)}`
+        );
+        if (entry.new) {
+          collection.updateOne({ uuid: model_uuid },{ $set:{ new: false } });
+          await fetch(
+          `http://127.0.0.1:5005/generate_shard?model=${encodeURIComponent(model_uuid)}`
+          );
+        }
+    return res.json({ status: "success" });
   }
 );
 
